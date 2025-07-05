@@ -11,7 +11,7 @@ from config.config import Config
 from admin_bot.keyboards.keyboards import AdminKeyboards
 from admin_bot.utils.states import FilterStates
 from admin_bot.utils import send_menu_message
-
+from aiogram.filters import Command
 logger = logging.getLogger(__name__)
 
 router = Router()
