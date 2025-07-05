@@ -1,0 +1,24 @@
+[Unit]
+Description=Telegram Channel Monitor Bot
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/telegram-channel-monitor-main
+ExecStart=/usr/bin/python3 /root/telegram-channel-monitor-main/main.py
+Restart=always
+RestartSec=10
+StandardOutput=append:/root/telegram-channel-monitor-main/logs/bot.log
+StandardError=append:/root/telegram-channel-monitor-main/logs/errors.log
+
+# Автоматический перезапуск при сбоях
+StartLimitInterval=60
+StartLimitBurst=5
+
+# Переменные окружения
+Environment=PYTHONPATH=/root/telegram-channel-monitor-main
+
+[Install]
+WantedBy=multi-user.target 

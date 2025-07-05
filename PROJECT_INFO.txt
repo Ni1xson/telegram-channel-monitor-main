@@ -1,0 +1,30 @@
+
+# Telegram Channel Monitor
+
+Версия: 1.0.0
+Дата создания: Июнь 2025
+Автор: AI Assistant
+
+## Компоненты:
+- User API (Telethon) - мониторинг каналов
+- Bot API (Aiogram 3.x) - админка
+- SQLite + aiosqlite - база данных
+- Гибкая система фильтрации
+- Настраиваемые уведомления
+
+## Файлы проекта:
+- main.py - главный файл запуска
+- config/ - конфигурация
+- database/ - работа с БД
+- admin_bot/ - админ-бот
+- monitor/ - клиент мониторинга
+- requirements.txt - зависимости
+- .env.example - пример настроек
+- README.md - документация
+
+## Быстрый старт:
+1. Скопируйте .env.example в .env
+2. Заполните настройки API
+3. Запустите run.bat (Windows) или run.sh (Linux/Mac)
+
+Подробная инструкция в README.md
