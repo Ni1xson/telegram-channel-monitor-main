@@ -17,6 +17,14 @@ logger = logging.getLogger(__name__)
 
 router = Router()
 
+ADMIN_NAMES = {
+    642345731: "Семен",
+    858344502: "Владос",
+}
+
+def get_admin_name(user_id):
+    return ADMIN_NAMES.get(user_id, str(user_id))
+
 
 @router.message(Command("cancel"))
 @router.message(F.text.casefold() == "отмена")
@@ -261,11 +269,22 @@ async def _compose_status_text(
 
     # Честная проверка user-клиента
     authorized = await monitor_client.is_authorized()
-    user_client_status = "✅ Подключен" if authorized else "❌ Отключен"
+    if authorized and monitor_client.client:
+        try:
+            me = await monitor_client.client.get_me()
+            username = f"@{me.username}" if me.username else me.first_name or me.id
+            admin_name = get_admin_name(me.id)
+            user_client_status = f"✅ Подключен как {username} ({admin_name})"
+        except Exception:
+            user_client_status = "✅ Подключен"
+    else:
+        user_client_status = "❌ Отключен"
 
     # Честная проверка базы данных
     db_available = await is_database_available(db)
-    db_status = "✅ Доступна" if db_available else "❌ Недоступна"
+    db_status = (
+        f"✅ Доступна ({db.db_path})" if db_available else f"❌ Недоступна ({db.db_path})"
+    )
 
     # Честная логика мониторинга и активности
     monitoring_enabled = monitor_client.is_monitoring_enabled(user_id)
