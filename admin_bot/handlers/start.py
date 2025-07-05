@@ -5,6 +5,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
+import aiosqlite
 
 from config.config import Config
 from admin_bot.keyboards.keyboards import AdminKeyboards
@@ -237,6 +238,15 @@ async def open_stats(
     )
 
 
+async def is_database_available(db: Database) -> bool:
+    try:
+        async with aiosqlite.connect(db.db_path) as conn:
+            await conn.execute("SELECT 1")
+        return True
+    except Exception:
+        return False
+
+
 async def _compose_status_text(
     user_id: int,
     db: Database,
@@ -249,8 +259,15 @@ async def _compose_status_text(
     found_today = await db.count_messages_today(user_id)
     settings = await db.get_user_settings(user_id)
 
+    # Честная проверка user-клиента
     authorized = await monitor_client.is_authorized()
     user_client_status = "✅ Подключен" if authorized else "❌ Отключен"
+
+    # Честная проверка базы данных
+    db_available = await is_database_available(db)
+    db_status = "✅ Доступна" if db_available else "❌ Недоступна"
+
+    # Мониторинг
     monitoring_enabled = monitor_client.is_monitoring_enabled(user_id)
     monitoring_active = monitor_client.running and channels_count and monitoring_enabled
     monitoring_status = "✅ Включен" if monitoring_enabled else "❌ Выключен"
@@ -259,7 +276,7 @@ async def _compose_status_text(
         "📊 <b>Статус системы</b>\n\n"
         "🤖 Админ-бот: ✅ Работает\n"
         f"👤 User-клиент: {user_client_status}\n"
-        "💾 База данных: ✅ Доступна\n"
+        f"💾 База данных: {db_status}\n"
         f"🔍 Мониторинг: {monitoring_status}\n"
         f"📡 Активность: {'✅ Активна' if monitoring_active else '❌ Неактивна'}\n\n"
         "📈 <b>Статистика:</b>\n"
