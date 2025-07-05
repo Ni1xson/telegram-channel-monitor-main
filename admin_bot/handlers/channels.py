@@ -173,11 +173,16 @@ async def show_channels_list(callback: CallbackQuery, db: Database):
     keyboard = []
     for channel in channels[:10]:  # Показываем только первые 10
         status = "✅" if channel.enabled else "❌"
-        title = channel.channel_title[:25]
+        if channel.channel_username:
+            label = f"@{channel.channel_username}"
+        elif channel.channel_title:
+            label = channel.channel_title[:25]
+        else:
+            label = str(channel.channel_id)
         keyboard.append(
             [
                 InlineKeyboardButton(
-                    text=f"{status} {title}",
+                    text=f"{status} {label}",
                     callback_data=f"channel_show_{channel.id}",
                 )
             ]
@@ -457,7 +462,7 @@ async def process_add_target_chat(
 
     await message.answer(
         f"📨 Запрос на добавление чата <b>{chat_title}</b> отправлен. "
-        "Нажмите ‘Подтвердить чат’ в самом чате.",
+        "Нажмите 'Подтвердить чат' в самом чате.",
         reply_markup=AdminKeyboards.target_chats_menu(),
         parse_mode="HTML",
     )

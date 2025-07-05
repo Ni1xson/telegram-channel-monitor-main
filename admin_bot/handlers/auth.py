@@ -30,9 +30,24 @@ async def open_user_client_menu(message: Message, monitor_client: TelegramMonito
     if message.from_user.id not in Config.ALLOWED_USERS:
         return
     authorized = await monitor_client.is_authorized()
+    user_info = None
+    if authorized and monitor_client.client:
+        try:
+            me = await monitor_client.client.get_me()
+            if getattr(me, 'username', None):
+                username = f"@{me.username}"
+            elif getattr(me, 'first_name', None):
+                username = me.first_name
+            else:
+                username = str(me.id)
+            user_info = f"<b>Подключён как:</b> {username} (ID: {me.id})"
+        except Exception:
+            user_info = "<b>Подключён</b>"
+    else:
+        user_info = "<b>❌ Не авторизован</b>"
     await send_menu_message(
         message,
-        "👤 <b>User клиент</b>\n\nВыберите действие:",
+        f"👤 <b>User клиент</b>\n\n{user_info}\n\n<b>Выберите действие:</b>",
         reply_markup=AdminKeyboards.user_client_menu(authorized),
     )
 
@@ -284,27 +299,35 @@ async def delete_session(callback: CallbackQuery, monitor_client: TelegramMonito
 
 @router.callback_query(F.data == "user_cli_login")
 async def run_cli_login(callback: CallbackQuery, monitor_client: TelegramMonitorClient):
-    """Запустить CLI авторизацию."""
+    """Запустить CLI авторизацию или показать инструкцию."""
     if callback.from_user.id not in Config.ALLOWED_USERS:
         await callback.answer("Нет доступа", show_alert=True)
         return
-
-    await callback.message.answer(
-        "💻 Запускаю авторизацию в консоли. Следуйте инструкциям в терминале..."
-    )
-    proc = await asyncio.create_subprocess_exec(
-        sys.executable,
-        "-m",
-        "scripts.cli_login",
-        cwd=str(Path(__file__).resolve().parents[2]),
-    )
-    await proc.wait()
-
-    authorized = await monitor_client.is_authorized()
-    if proc.returncode == 0 and authorized:
-        result = "✅ Авторизация завершена"
-    else:
-        result = "❌ Авторизация не удалась"
-
-    await callback.message.answer(result)
+    try:
+        await callback.message.answer(
+            "💻 Запускаю авторизацию в консоли. Следуйте инструкциям в терминале..."
+        )
+        proc = await asyncio.create_subprocess_exec(
+            sys.executable,
+            "-m",
+            "scripts.cli_login",
+            cwd=str(Path(__file__).resolve().parents[2]),
+        )
+        await proc.wait()
+        authorized = await monitor_client.is_authorized()
+        if proc.returncode == 0 and authorized:
+            result = "✅ Авторизация завершена"
+        else:
+            result = "❌ Авторизация не удалась"
+        await callback.message.answer(result)
+    except Exception:
+        await callback.message.answer(
+            "ℹ️ Не удалось запустить процесс авторизации на сервере.\n\n"
+            "<b>Что делать?</b>\n"
+            "1. Откройте терминал на сервере.\n"
+            "2. Выполните команду:\n"
+            "<code>python3 scripts/cli_login.py</code>\n"
+            "3. Следуйте инструкциям в консоли.\n"
+            "4. После успешной авторизации вернитесь в бота."
+        )
     await callback.answer()
