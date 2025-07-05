@@ -24,6 +24,7 @@ class AdminKeyboards:
                     KeyboardButton(text="📊 Статистика"),
                 ],
                 [KeyboardButton(text="👤 User клиент")],
+                [KeyboardButton(text="👥 Управление группой")],
                 [KeyboardButton(text="ℹ️ Помощь")],
             ],
             resize_keyboard=True,

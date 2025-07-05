@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -477,3 +477,46 @@ async def toggle_monitoring_cmd(
         await send_monitoring_summary(message.bot, db, user_id)
     else:
         await message.answer("❌ Мониторинг выключен")
+
+
+@router.message(F.text == "👥 Управление группой")
+async def group_admin_menu(message: Message, state: FSMContext):
+    await state.clear()
+    if message.from_user.id not in Config.ALLOWED_USERS:
+        return
+    await send_menu_message(
+        message,
+        "👥 <b>Управление группой</b>\n\nВыберите действие:",
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="Список участников", callback_data="group_members")],
+                [InlineKeyboardButton(text="🔙 Назад", callback_data="back_main")],
+            ]
+        ),
+    )
+
+
+@router.callback_query(F.data == "group_members")
+async def show_group_members(callback: CallbackQuery, monitor_client: TelegramMonitorClient):
+    # ID вашей группы (замените на нужный)
+    group_id = -1001234567890
+    try:
+        members = []
+        async for user in monitor_client.client.iter_participants(group_id, limit=20):
+            name = user.first_name or "Без имени"
+            username = f"@{user.username}" if user.username else ""
+            members.append(f"• {name} {username}".strip())
+        if not members:
+            text = "В группе нет участников или бот не админ."
+        else:
+            text = "<b>Участники группы:</b>\n" + "\n".join(members)
+    except Exception as e:
+        text = f"Ошибка: {e}"
+    await callback.message.edit_text(
+        text,
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[[InlineKeyboardButton(text="🔙 Назад", callback_data="back_main")]]
+        ),
+        parse_mode="HTML",
+    )
+    await callback.answer()
