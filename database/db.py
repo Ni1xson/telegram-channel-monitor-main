@@ -547,14 +547,13 @@ class Database(DatabaseManager):
             logger.exception("Ошибка получения настроек пользователя: %s", e)
             return None
 
-    async def count_user_filters(self, user_id: int, enabled_only: bool = False) -> int:
-        """Возвращает количество фильтров пользователя."""
+    async def count_user_filters(self, enabled_only: bool = False) -> int:
+        """Возвращает общее количество фильтров."""
         try:
-            query = "SELECT COUNT(*) FROM filters WHERE user_id = ?"
-            params = [user_id]
+            query = "SELECT COUNT(*) FROM filters"
+            params = []
             if enabled_only:
-                query += " AND enabled = TRUE"
-
+                query += " WHERE enabled = TRUE"
             async with aiosqlite.connect(self.db_path) as db:
                 async with db.execute(query, params) as cursor:
                     row = await cursor.fetchone()
@@ -563,16 +562,13 @@ class Database(DatabaseManager):
             logger.exception("Ошибка подсчёта фильтров: %s", e)
             return 0
 
-    async def count_user_channels(
-        self, user_id: int, enabled_only: bool = False
-    ) -> int:
-        """Возвращает количество каналов пользователя."""
+    async def count_user_channels(self, enabled_only: bool = False) -> int:
+        """Возвращает общее количество каналов."""
         try:
-            query = "SELECT COUNT(*) FROM channels WHERE user_id = ?"
-            params = [user_id]
+            query = "SELECT COUNT(*) FROM channels"
+            params = []
             if enabled_only:
-                query += " AND enabled = TRUE"
-
+                query += " WHERE enabled = TRUE"
             async with aiosqlite.connect(self.db_path) as db:
                 async with db.execute(query, params) as cursor:
                     row = await cursor.fetchone()
