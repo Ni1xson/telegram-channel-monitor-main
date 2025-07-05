@@ -66,7 +66,12 @@ class AdminKeyboards:
                 ],
                 [
                     InlineKeyboardButton(
-                        text="🔄 Перезагрузить", callback_data="filter_reload"
+                        text="🔄 Обновить список", callback_data="filter_refresh"
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="🗑 Очистить все", callback_data="filter_clear_all"
                     )
                 ],
                 [InlineKeyboardButton(text="🔙 Назад", callback_data="back_main")],
@@ -87,6 +92,16 @@ class AdminKeyboards:
                 [
                     InlineKeyboardButton(
                         text="📋 Список каналов", callback_data="channel_list"
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="🔄 Обновить список", callback_data="channel_refresh"
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="🗑 Очистить все", callback_data="channel_clear_all"
                     )
                 ],
                 [InlineKeyboardButton(text="🔙 Назад", callback_data="back_main")],
