@@ -117,18 +117,18 @@ class Database(DatabaseManager):
     async def get_user_filters(
         self, user_id: int, enabled_only: bool = True
     ) -> List[Filter]:
-        """Получает список фильтров пользователя"""
+        """Получает общий список фильтров для всех пользователей"""
         try:
             async with aiosqlite.connect(self.db_path) as db:
                 query = """
                     SELECT id, user_id, name, keywords, logic_type,
                            case_sensitive, word_order_matters, enabled, created_at
-                    FROM filters WHERE user_id = ?
+                    FROM filters
                 """
-                params = [user_id]
+                params = []
 
                 if enabled_only:
-                    query += " AND enabled = TRUE"
+                    query += " WHERE enabled = TRUE"
 
                 query += " ORDER BY created_at DESC"
 
@@ -231,18 +231,18 @@ class Database(DatabaseManager):
     async def get_user_channels(
         self, user_id: int, enabled_only: bool = True
     ) -> List[Channel]:
-        """Получает список каналов пользователя"""
+        """Получает общий список каналов для всех пользователей"""
         try:
             async with aiosqlite.connect(self.db_path) as db:
                 query = """
                     SELECT id, user_id, channel_id, channel_username,
                            channel_title, enabled, added_at
-                    FROM channels WHERE user_id = ?
+                    FROM channels
                 """
-                params = [user_id]
+                params = []
 
                 if enabled_only:
-                    query += " AND enabled = TRUE"
+                    query += " WHERE enabled = TRUE"
 
                 query += " ORDER BY added_at DESC"
 
