@@ -267,10 +267,18 @@ async def _compose_status_text(
     db_available = await is_database_available(db)
     db_status = "✅ Доступна" if db_available else "❌ Недоступна"
 
-    # Мониторинг
+    # Честная логика мониторинга и активности
     monitoring_enabled = monitor_client.is_monitoring_enabled(user_id)
-    monitoring_active = monitor_client.running and channels_count and monitoring_enabled
-    monitoring_status = "✅ Включен" if monitoring_enabled else "❌ Выключен"
+    monitoring_status = (
+        "✅ Включен"
+        if monitoring_enabled and channels_count > 0 and filters_count > 0
+        else "❌ Выключен"
+    )
+    activity_status = (
+        "✅ Активна"
+        if channels_count > 0 and filters_count > 0
+        else "❌ Неактивна"
+    )
 
     status_text = (
         "📊 <b>Статус системы</b>\n\n"
@@ -278,7 +286,7 @@ async def _compose_status_text(
         f"👤 User-клиент: {user_client_status}\n"
         f"💾 База данных: {db_status}\n"
         f"🔍 Мониторинг: {monitoring_status}\n"
-        f"📡 Активность: {'✅ Активна' if monitoring_active else '❌ Неактивна'}\n\n"
+        f"📡 Активность: {activity_status}\n\n"
         "📈 <b>Статистика:</b>\n"
         f"• Активных фильтров: {filters_count}\n"
         f"• Отслеживаемых каналов: {channels_count}\n"
